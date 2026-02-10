@@ -1,13 +1,23 @@
 import OpenAI from "openai";
 
 export default async function handler(req, res) {
+  // Add CORS headers for all requests
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Allows any origin (for testing; tighten later if needed)
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Handle preflight OPTIONS request (browser sends this before POST)
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const form = await req.formData(); // Handles multipart
+  const form = await req.formData();
   const message = form.get("message") || "";
   const mode = form.get("mode") || "step_by_step";
   const device = form.get("device") || "unknown";
